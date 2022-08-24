@@ -1,15 +1,23 @@
 package spring.corelecture.order;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import spring.corelecture.AppConfig;
 import spring.corelecture.member.Grade;
 import spring.corelecture.member.Member;
 import spring.corelecture.member.MemberService;
 import spring.corelecture.member.MemberServiceImpl;
 
 public class OrderServiceTest {
-    MemberService memberService = new MemberServiceImpl();
-    OrderService orderService = new OrderServiceImpl();
+    @BeforeEach
+    public void beforeEach() {
+        AppConfig appConfig = new AppConfig();
+        memberService = appConfig.memberService();
+        orderService = appConfig.orderService();
+    }
+    MemberService memberService;
+    OrderService orderService;
 
     @Test
     void createOrder(){
