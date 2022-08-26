@@ -2,6 +2,7 @@ package spring.corelecture;
 
 import spring.corelecture.discount.DiscountPolicy;
 import spring.corelecture.discount.FixDiscountPolicy;
+import spring.corelecture.discount.RateDiscountPolicy;
 import spring.corelecture.member.MemberService;
 import spring.corelecture.member.MemberServiceImpl;
 import spring.corelecture.member.MemoryMemberRepository;
@@ -22,7 +23,7 @@ public class AppConfig {
     }
 
     public DiscountPolicy discountPolicy() {
-        return new FixDiscountPolicy();
+        return new RateDiscountPolicy();
     }
 }
 //구현 객체를 전부 생성하고, 각 인스턴스의 참조를 생성자를 통해 주입해준다.
