@@ -1,5 +1,7 @@
 package spring.corelecture;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import spring.corelecture.discount.DiscountPolicy;
 import spring.corelecture.discount.FixDiscountPolicy;
 import spring.corelecture.discount.RateDiscountPolicy;
@@ -9,19 +11,24 @@ import spring.corelecture.member.MemoryMemberRepository;
 import spring.corelecture.order.OrderService;
 import spring.corelecture.order.OrderServiceImpl;
 
+@Configuration
 public class AppConfig {
+    @Bean
     public MemberService memberService() {
         return new MemberServiceImpl(MemberRepository());
     }
 
-    private MemoryMemberRepository MemberRepository() {
+    @Bean
+    public MemoryMemberRepository MemberRepository() {
         return new MemoryMemberRepository();
     }
 
+    @Bean
     public OrderService orderService() {
-        return new OrderServiceImpl(MemberRepository(),discountPolicy());
+        return new OrderServiceImpl(MemberRepository(), discountPolicy());
     }
 
+    @Bean
     public DiscountPolicy discountPolicy() {
         return new RateDiscountPolicy();
     }
