@@ -3,6 +3,7 @@ package spring.corelecture;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import spring.corelecture.discount.DiscountPolicy;
+import spring.corelecture.discount.FixDiscountPolicy;
 import spring.corelecture.discount.RateDiscountPolicy;
 import spring.corelecture.member.MemberService;
 import spring.corelecture.member.MemberServiceImpl;
@@ -30,7 +31,7 @@ public class AppConfig {
 
     @Bean
     public DiscountPolicy discountPolicy() {
-        // return new FixDiscountPolicy(); 구성 영역에서 갈아끼우듯이 바꾸면 주입이 바뀜
+//         return new FixDiscountPolicy(); //구성 영역에서 갈아끼우듯이 바꾸면 주입이 바뀜
         return new RateDiscountPolicy();
     }
 }

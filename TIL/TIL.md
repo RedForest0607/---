@@ -143,3 +143,103 @@ public class AppConfig {
 
 - AppConfig처럼 객체를 생성하고 관리해주는 것을 **IoC 컨테이너(DI 컨테이너)**라고 한다.
 - 오브젝트 팩토리 혹은 어샘블리라고도 한다.
+
+### 스프링 빈의 조회
+스프링의 대 원칙 *부모타입의 빈을 조회하면 자식 타입도 함께 조회한다*  
+최고 부모 타입인 Object를 조회하면 Spring에 등록된 모든 bean이 조회된다.
+
+![img](https://user-images.githubusercontent.com/74250270/215919841-10cc42ed-5dfb-42c7-b29b-951fc9b9b23f.png)
+
+- BeanFactory
+  스프링의 최상위 컨테이너로 스프링 빈을 관리하고 조회하는 역할을 담당한다.
+- ApplicationContext
+  BeanFactory의 거의 모든 기능을 상속 받아서 제공한다.
+
+### 스프링 BeanDefinition
+스프링의 설정 (JavaCode, XML, ApplicationContext)의 다양한 형식 지원은 BeanDefinition이라는 추상화를 통해서 이러한 설정을 지원하는 것이다.
+![img](https://user-images.githubusercontent.com/74250270/215920423-22afbe18-79c5-4175-a049-cba82d3fcb8d.png)
+스프링 컨테이너는 설정파일의 형식과는 관계없이 BeanDefinition만 알면 Bean들을 관리할 수 있게 된다.
+
+![img](https://user-images.githubusercontent.com/74250270/215920385-7dcdaa41-33a7-45f1-9903-cd74d2fc7a18.png)
+다음처럼 메타정보를 읽고, 생성하는 각각의 구현체가 존재하기 떄문에, ApplicationContext가 다양한 설정 정보들을 읽어들일 수 있는 것이다.
+
+BeanDefinition에 관해서는 너무 구체적으로 아는 것이 힘들다면, 위와같은 추상화의 흐름을 이해하고, BeanDefinition이 어떤 방식으로 ApplicationContext에 등록되는지를 알고 있으면 된다.
+
+### 싱글톤 패턴
+웹어플리케이션에서 싱글톤 패턴의 필요성
+
+```java
+public class SingletonObject {
+  private static final SingletonObject singletonObject = new SingletonObject();
+
+  //public을 통해서 생성된 객체를 가져올 수 있지만
+  public static SingletonObject getInstance() {
+    return singletonObject;
+  }
+
+  // 생성자는 감춰둔다
+  private SingletonObject() {
+  }
+}
+```
+
+
+## 싱글톤 패턴의 문제점
+- 구현에 코드가 많이 들어간다.
+- 의존관계상 구체 클래스에 의존한다 -> DIP 위반, OCP 위반
+- 테스트가 어렵다
+- 내부속성 변경이나 초기화가 어렵다
+- 자식클래스 생성이 어렵다  
+  => 유연성이 떨어진다
+- 안티패턴이라고도 불린다
+
+## 스프링에서의 싱글톤 패턴
+스프링 컨테이너는 각각의 빈이 싱글톤 패턴을 적용하지 않아도 싱글톤으로 객체의 인스턴스를 관리한다.  
+스프링 컨테이너가 싱글톤 객체를 생성하고 관리하는 `싱글톤 레지스트리` 방식으로 관리를 하는데, DIP 위반, OCP 위반, 테스트, private가 없어도 싱글톤 사용이 가능하다.
+
+## 싱글톤 사용 시 주의사항
+> 싱글톤은 항상 stateless 해야한다.  
+
+싱글톤의 특성상 하나의 객체 인스턴스가 공유되기 때문에 내부적으로 상태가 존재하는 필드가 있을 경우, 외부의 호출에 따라서 값이 달라질 위험이 있다.
+따라서 싱글톤의 내부는 항상 stateless로 상태가 없도록 코딩해야지 공유자원에 대한 문제가 생기지 않는다.
+
+## @Configuration에서 싱글톤의 특징
+설정 내부에서는 여러번 new로 호출하지만 실제로 Bean이 생성되는건 단 한번뿐이다.
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public MemberService memberService() {
+        return new MemberServiceImpl(MemberRepository()); //MemberRepositry 호출
+    }
+
+    @Bean
+    public MemoryMemberRepository MemberRepository() {
+        return new MemoryMemberRepository(); //MemberRepositry 호출
+    }
+
+    @Bean
+    public OrderService orderService() {
+        return new OrderServiceImpl(MemberRepository(), discountPolicy()); //MemberRepositry 호출
+    }
+    
+  ...
+```
+
+```logcatfilter
+실제로는
+
+MemberServiceImpl
+MemoryMemberRepository
+OrderServiceImpl
+
+한번씩만 호출
+```
+>@Configuration은 CGLIB을 통해서 싱글톤을 보장한다  
+
+해당하는 어노테이션을 사용하는 Config파일은, 실제로 스프링이 직접 가져다 쓰지 않고, CGLIB을 통해서 프록시 객체를 사용하여서,
+내부적으로 Bean이 이미 생성되어 있는지를 확인하고 생성하기 때문에 싱글톤이 보장된다.
+![img](https://user-images.githubusercontent.com/74250270/215931514-53bb0921-4a8e-439c-aaae-7322d956440f.png)
+따라서 내부적으로는 다른 객체가 호출되고, 이를 통해서 추가적인 다른코드 없이 싱글톤을 보장하게 된다.  
+만약 어노테이션을 `@Bean`으로 바꾸게 될 경우, 순수한 객체 인스턴스가 가져와지면서, 위의 코드에서도 세번 호출되게 된다.
