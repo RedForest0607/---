@@ -1,8 +1,11 @@
 package spring.corelecture.discount;
 
+import org.springframework.stereotype.Component;
+
 import spring.corelecture.member.Grade;
 import spring.corelecture.member.Member;
 
+@Component
 public class RateDiscountPolicy implements DiscountPolicy {
 
     private int discountPercent = 10;
